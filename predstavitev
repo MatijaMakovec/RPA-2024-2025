@@ -1,0 +1,78 @@
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 
+#define SCREEN_HEIGHT 64 
+
+#define OLED_RESET -1    // reset pin
+#define SCREEN_ADDRESS 0x3C 
+#define BUTTON_PIN 4       // pin
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+bool reverseDirection = false; // obrne smer
+
+void displayLoadingWithAnimation() {
+  const int centerX = SCREEN_WIDTH / 2;
+  const int centerY = SCREEN_HEIGHT / 2;
+  const int textWidth = 6 * 2 * strlen("Loading"); // velikost besedila
+  const int textHeight = 16;                      // na kateri višini je besedilo
+  const int radius = 30;                          // radij kroga
+
+  static int angle = 0; // Persistent angle
+  int step = reverseDirection ? -10 : 10;
+
+  angle = (angle + step) % 360; // Increment or decrement the angle
+
+  display.clearDisplay();
+
+  // besedilo ki ga izpiše
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor((SCREEN_WIDTH - textWidth) / 2, (SCREEN_HEIGHT - textHeight) / 2);
+  display.print("Loading");
+
+  // krog okoli napisa
+  int x = centerX + radius * cos(radians(angle));
+  int y = centerY + radius * sin(radians(angle));
+
+  
+  display.drawRect(x - 5, y - 5, 10, 10, WHITE); // kvadrat
+
+  display.display();
+  delay(50); // hitrost 
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // štarta diplay
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;); 
+  }
+
+  // pin 4
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  display.clearDisplay();
+  display.display();
+}
+
+void loop() {
+  // preveri položaj pina
+  static bool lastButtonState = HIGH; // zadnja pozicija pina
+  bool currentButtonState = digitalRead(BUTTON_PIN);
+
+  // ob pritisku pina spremeni smer
+  if (lastButtonState == HIGH && currentButtonState == LOW) {
+    reverseDirection = !reverseDirection; // obdrži semr
+  }
+  lastButtonState = currentButtonState;
+
+  // napis
+  displayLoadingWithAnimation();
+}
