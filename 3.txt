@@ -1,0 +1,25 @@
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define LED_PIN 16  // Pin, na katerem je povezana LED (dioda D1) z uporabo PWM
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);  // Nastavi pin LED_PIN kot izhod
+}
+
+void loop() {
+  // Povečujemo svetilnost od 0 do 255
+  for (int brightness = 0; brightness <= 255; brightness++) {
+    analogWrite(LED_PIN, brightness);  // Nastavi svetilnost LED na trenutno vrednost
+    delay(10);  // Počakaj 10 ms, preden spremenimo svetilnost
+  }
+
+  // Zmanjšujemo svetilnost od 255 do 0
+  for (int brightness = 255; brightness >= 0; brightness--) {
+    analogWrite(LED_PIN, brightness);  // Nastavi svetilnost LED na trenutno vrednost
+    delay(10);  // Počakaj 10 ms, preden spremenimo svetilnost
+  }
+}
