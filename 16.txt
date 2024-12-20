@@ -7,75 +7,49 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
-#define OLED_RESET    -1    // reset pin
-#define SCREEN_ADDRESS 0x3C // Address for the OLED display
-#define POT_PIN        14   // Potentiometer connected to analog pin A0
+#define OLED_RESET    -1    
+#define SCREEN_ADDRESS 0x3C 
+#define POT_PIN        14   
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-float angle = 0.0;            // Angle of rotation for the square
-int squareSize = 10;          // Size of the square
-float rotationSpeed = 0.05;   // Default rotation speed
-
+float angle = 0.0;//kot vrtenja
+int squareSize = 30;//velikost kvadrata
+float rotationSpeed = 1;//začetna hitrost vrtenja
 void setup() {
   Serial.begin(115200);
-
-  // Initialize the OLED display
+  //display
   if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
-    for (;;); // Infinite loop if display initialization fails
+    for (;;);
   }
-
   display.clearDisplay();
   display.display();
-  delay(2000);  // Pause for 2 seconds to show initial screen
+  delay(100);//čas delay
 }
-
 void loop() {
-  // Read potentiometer value (range from 0 to 1023)
-  int potValue = analogRead(POT_PIN);
-
-  // Map potentiometer value to an appropriate speed range (e.g., 0.01 to 0.2)
+  int potValue = analogRead(POT_PIN); //hitrost 0-1024
   rotationSpeed = map(potValue, 0, 1023, 1, 20) / 1000.0;
-
-  // Clear the display buffer
   display.clearDisplay();
-
-  // Calculate the center of the screen
-  int centerX = SCREEN_WIDTH / 2;
+  int centerX = SCREEN_WIDTH / 2;//pozicija kvadrata
   int centerY = SCREEN_HEIGHT / 2;
-
-  // Calculate half the size of the square
-  float halfSize = squareSize / 2.0;
-
-  // Define the four corners of the rotating square
+  float halfSize = squareSize / 2.0;//polovica kvadrata velikost
+  //robovi kvadrata med vrtenjem
   int x1 = centerX + cos(angle) * halfSize;
   int y1 = centerY + sin(angle) * halfSize;
-
-  int x2 = centerX + cos(angle + PI / 2) * halfSize;
-  int y2 = centerY + sin(angle + PI / 2) * halfSize;
-
+  int x2 = centerX + cos(angle + PI/2) * halfSize;
+  int y2 = centerY + sin(angle + PI/2) * halfSize;
   int x3 = centerX + cos(angle + PI) * halfSize;
   int y3 = centerY + sin(angle + PI) * halfSize;
-
-  int x4 = centerX + cos(angle + 3 * PI / 2) * halfSize;
-  int y4 = centerY + sin(angle + 3 * PI / 2) * halfSize;
-
-  // Draw the square using the four calculated corners
+  int x4 = centerX + cos(angle + 3 * PI/2) * halfSize;
+  int y4 = centerY + sin(angle + 3 * PI/2) * halfSize;
+  //kordinati kvadrata
   display.drawLine(x1, y1, x2, y2, WHITE);
   display.drawLine(x2, y2, x3, y3, WHITE);
   display.drawLine(x3, y3, x4, y4, WHITE);
   display.drawLine(x4, y4, x1, y1, WHITE);
-
-  // Increment the angle for the next frame
+  
   angle += rotationSpeed;
-  if (angle > 2 * PI) {
-    angle -= 2 * PI;  // Keep the angle within 0-2PI
-  }
-
-  // Update the display
+  
   display.display();
-
-  // Control the frame rate by adding a small delay
-  delay(30); // Adjust this delay if needed to fine-tune the speed
 }
